@@ -132,3 +132,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Redirects after authentication
 LOGIN_REDIRECT_URL = 'home'  # name of the route to go after login/signup
 LOGIN_URL = 'login'  # where @login_required sends users
+
+# Media files (Uploaded by users)
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

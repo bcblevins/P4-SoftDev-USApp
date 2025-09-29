@@ -28,6 +28,14 @@
         align-items: center;
         justify-content: center;
     }
+    .error {
+        color: red;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding-inline: 20px;
+    }
 </style>
 <main>
     <div class="container login-container">
@@ -42,8 +50,14 @@
                 <label for="{{ form.password.id_for_label }}" style="display: block;">Password</label>
                 {{ form.password }}
             </div>
+
             <button class="btn" type="submit">Login</button>
         </form>
+            {% if form.non_field_errors %}
+                <div class="error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
     </div>
     <div>
         <span>Don't have an account? </span><a href="{% url 'signup' %}">Sign up</a> 

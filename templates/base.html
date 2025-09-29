@@ -11,8 +11,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 20px;
             border-bottom: 1px solid #b1b0b0;
+            position: relative; /* Needed for absolute positioning of center */
+        }
+
+            .search-form {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            /* Optionally: */
 
         }
 
@@ -38,7 +46,7 @@
     <nav>
         <a href="{% url 'home' %}">LITReview</a>
 
-        <form action="{% url 'search_books' %}" method="get"">
+        <form action="{% url 'search_books' %}" method="get" class="search-form">
             <input  type="text" name="q" placeholder="Search for a book...">
         </form>
 

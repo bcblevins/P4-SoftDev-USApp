@@ -2,24 +2,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Find Users to Follow</h1>
+<style>
+    main {
+        padding-inline: 80px;
+    }
+</style>
+<main>
+    <form method="get">
+        <span>Search: </span>
+        <input type="text" name="q" placeholder="Search by name" value="{{ query }}">
+    </form>
 
-<form method="get">
-    <input type="text" name="q" placeholder="Search by name" value="{{ query }}">
-    <button class="btn" type="submit">Search</button>
-</form>
-
-{% if query %}
-    {% if results %}
-        <ul>
-            {% for user in results %}
-                <li>
-                    <a href="{% url 'public_profile' user.id %}">{{ user.full_name }}</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>No matching users found.</p>
+    {% if query %}
+        <h2>Users matching '{{ query }}'</h2>
+        {% if results %}
+            <ul>
+                {% for user in results %}
+                    <li class="container">
+                        <a href="{% url 'public_profile' user.id %}">{{ user.full_name }}</a>
+                        <p>Reviews: {{ user.review_set.count }}</p>
+                        <p>Followers: {{ user.followers.count }}</p>
+                        <p>Following: {{ user.following.count }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No matching users found.</p>
+        {% endif %}
     {% endif %}
-{% endif %}
+</main>
 {% endblock %}
