@@ -3,6 +3,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import BookForm, ReviewForm
 from .models import Book, Review
+from django.db.models import Q
 
 def book_detail(request, book_id):
     book = get_object_or_404(Book, id=book_id)
@@ -50,18 +51,29 @@ def create_review(request, book_id):
 
 
 def home(request):
-    if request.user.is_authenticated:
-        # Logged-in: get reviews from followed users
-        following_users = request.user.following.all()
-        reviews = Review.objects.filter(user__in=following_users).select_related("book", "user")
-    else:
-        # Anonymous: show all reviews (or public subset)
-        reviews = Review.objects.all().select_related("book", "user")
+    show_all = request.GET.get('all') == '1'
+    reviews = []
 
-    # Sort latest first
+    if request.user.is_authenticated and not show_all:
+        # Logged-in personalized feed
+        following_users = request.user.following.all()
+        reviews = Review.objects.filter(
+            Q(user__in=following_users) | Q(user=request.user)
+        ).select_related("book", "user")
+        is_self = True
+    else:
+        # Anonymous OR "show all" clicked
+        reviews = Review.objects.all().select_related("book", "user")
+        is_self = request.user.is_authenticated  
+
+
     reviews = reviews.order_by('-created')
 
-    return render(request, "home.html", {"reviews": reviews})
+    return render(request, "home.html", {
+        "reviews": reviews,
+        "is_self": is_self,
+        "show_all": show_all,
+    })
 
 
 def search_books(request):

@@ -1,0 +1,83 @@
+<style>
+    .review-item {
+        display: flex;
+        gap: 15px;
+    }
+
+    .book-link {
+        font-size: 1.2em;
+        color: #757575;
+        display: block;
+        margin-bottom: 0.5em;
+    }
+    img {
+        object-fit: cover;
+        max-width: 20%;
+        height: auto;
+    }
+    .review-content {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .review-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        justify-self: flex-end;
+    }
+</style>
+
+<div id="review-{{ review.id }}" class="container review-item">
+    {% if review.book.image %}
+        <img src="{{ review.book.image.url }}"
+                alt="{{ review.book.title }}"
+                class="review-book-image"
+                >
+    {% endif %}
+    <div class="review-content">
+        <div>
+            <!-- Link to book detail page, anchored to the review -->
+            <a class="book-link" href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">
+                {{ review.book.title }}
+            </a>
+            <hr>
+        </div>
+
+        <div>
+
+        <!-- Review headline and stars -->
+        <strong>{{ review.headline }}</strong> —
+        {% for i in "12345"|slice:":review.rating"|make_list %}
+            <span style="color:black;">&#9733;</span>
+        {% endfor %}
+        </div>
+        
+        <!-- Review body -->
+        <p>{{ review.body }}</p>
+
+        <!-- Review date/time -->
+        <p>
+            Review posted on {{ review.created|date:"F j, Y" }}
+            at {{ review.created|time:"g:i A" }}
+        </p>
+
+        {% if is_self %}
+            <div class="review-actions"">
+                <!-- Edit button -->
+                <button class="btn btn-primary"
+                        onclick="window.location.href='{% url 'edit_review' review.id %}'"
+                        type="button">
+                    Edit
+                </button>
+                <!-- Delete form -->
+                <form action="{% url 'delete_review' review.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+
+</div>

@@ -1,26 +1,44 @@
-
 {% extends "base.html" %}
-
 {% block content %}
-<h1>Homepage Feed</h1>
 
-{% for review in reviews %}
-    <div>
-        <a href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">
-            <strong>{{ review.headline }}</strong>
-        </a>
-        by {{ review.user.full_name }}  
-        (<em>{{ review.book.title }}</em>) — {{ review.created|date:"F j, Y, g:i a" }}
-        <p>{{ review.body|truncatechars:150 }}</p>
-    </div>
-{% empty %}
-    <p>No reviews to show.</p>
-{% endfor %}
+<style>
+    .review-list {
+        width: 100%;
+    }
+    main {
+        max-width: 60vw;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+<main>
+    
+    {% if user.is_authenticated and not show_all %}
+        <h1>Reviews by users you follow</h1>
+    {% else %}
+        <h1>Recent Reviews</h1>
+    {% endif %}
+    
+    <ul class="review-list">
+        {% for review in reviews %}
+            <li>
+                {% include "components/review.html" with review=review is_self=False %}
+            </li>
+        {% empty %}
+            <li>No reviews to show.</li>
+        {% endfor %}
+    </ul>
+    {% if user.is_authenticated %}
+        <div class="toggle-button">
+            {% if show_all %}
+                <a href="{% url 'home' %}" class="btn btn-secondary">Back to My Feed</a>
+            {% else %}
+                <a href="{% url 'home' %}?all=1" class="btn btn-primary">Show All Reviews</a>
+            {% endif %}
+        </div>
+    {% endif %} 
+</main>
 
-{% if user.is_authenticated %}
-    <form action="{% url 'logout' %}" method="post" style="display:inline;">
-        {% csrf_token %}
-    <button class="btn" type="submit">Log out</button>
-    </form>
-{% endif %}
 {% endblock %}

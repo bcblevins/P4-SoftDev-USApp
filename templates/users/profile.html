@@ -3,9 +3,6 @@
 {% block content %}
 <style>
 
-    .review-item {
-        list-style: none;
-    }
     main {
         margin-inline: 20vw;
     }
@@ -83,23 +80,8 @@
     {% if reviews %}
         <ul>
             {% for review in reviews %}
-                <li class="review-item container">
-                    <a href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">{{ review.book.title }}</a>
-                    <br>
-                    <strong>{{ review.headline }}</strong> —
-                    {% for i in "12345"|slice:":review.rating"|make_list %}
-                        <span style="color:black;">&#9733;</span>
-                    {% endfor %}
-                    <p>{{ review.body }}</p>
-                    <p>Review posted on {{ review.created|date:"F j, Y" }} at {{ review.created|time:"g:i A" }}</p>
-                    {% if is_self %}
-                        <br>
-                        <button class="btn btn-primary" onclick="window.location.href='{% url 'edit_review' review.id %}'" type="button">Edit</button>
-                        <form action="{% url 'delete_review' review.id %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button class="btn btn-danger" type="submit">Delete</button>
-                        </form>
-                    {% endif %}
+                <li>
+                    {% include "components/review.html" with review=review is_self=is_self %}
                 </li>
             {% endfor %}
         </ul>
