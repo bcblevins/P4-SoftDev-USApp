@@ -1,17 +1,29 @@
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import BookForm, ReviewForm
 from .models import Book, Review
-from django.db.models import Q
+from .forms import BookForm, ReviewForm
+from django.db.models import Q, Count, Avg
+from django.urls import reverse
 
 def book_detail(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    reviews = Review.objects.filter(book=book).select_related("user")  # optimize queries
-    return render(request, "reviews/book_detail.html", {
+    reviews = (Review.objects
+               .filter(book=book)
+               .select_related("user")
+               .order_by("-created"))
+
+    has_reviewed = False
+    if request.user.is_authenticated:
+        has_reviewed = Review.objects.filter(book=book, user=request.user).exists()
+
+    context = {
         "book": book,
         "reviews": reviews,
-    })
+        "can_review": request.user.is_authenticated and not has_reviewed,
+        "has_reviewed": has_reviewed,
+    }
+    return render(request, "reviews/book_detail.html", context)
 
 
 @login_required
@@ -38,7 +50,9 @@ def create_review(request, book_id):
             review.book = book             
             review.user = request.user      
             review.save()
-            return redirect("book_detail", book_id=book.id)
+            # Redirect to book detail with anchor to the new review
+            url = reverse("book_detail", args=[book.id]) + f"#review-{review.id}"
+            return redirect(url)
     else:
         form = ReviewForm()
 
@@ -79,8 +93,13 @@ def home(request):
 def search_books(request):
     query = request.GET.get("q", "")
     results = []
+
     if query:
-        results = Book.objects.filter(title__icontains=query)
+        results = Book.objects.filter(title__icontains=query).annotate(
+            review_count=Count('review', distinct=True),
+            avg_rating=Avg('review__rating')
+        )
+
     return render(request, "reviews/search_books.html", {
         "query": query,
         "results": results

@@ -39,6 +39,10 @@ ul {
     color: white;
 }
 
+.btn-primary:hover {
+    color: white;
+}
+
 .btn-secondary {
     background-color: #a3a9ae;
     color: white;
@@ -54,4 +58,11 @@ input[type="text"], input[type="password"], textarea {
     border-radius: 5px;
     box-sizing: border-box;
     margin: 2px;
+}
+
+.title-link {
+    font-size: 1.2em;
+    color: #757575;
+    display: block;
+    margin-bottom: 0.5em;
 }

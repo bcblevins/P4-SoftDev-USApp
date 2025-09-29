@@ -1,37 +1,74 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<h1>{{ book.title }}</h1>
+<style>
+    main {
+        max-width: 80vw;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .book-details {
+        display: flex;
+        gap: 20px;
 
-{% if book.image %}
-    <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width:200px;">
-{% endif %}
+    }
+    .book-details img {
+        max-width: 200px;
+        height: auto;
+        border: 1px solid #ddd;
+        margin-bottom: 15px;
+    }
+    .book-details p {
+        margin: 5px 0;
+        padding: 20px;
 
-<p>{{ book.description }}</p>
-<p><strong>Created:</strong> {{ book.created|date:"F j, Y" }}</p>
+    }
+    .review-list {
+        list-style: none;
+        padding: 0;
+    }
+    .review-list li {
+        margin-bottom: 20px;
+    }
+</style>
+<main>
+    <h1>{{ book.title }}</h1>
+    <div class="book-details">
+        {% if book.image %}
+            <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width:200px;">
+        {% endif %}
 
-<hr>
+        <p>{{ book.description }}</p>
+    </div>
+    <p><strong>Created:</strong> {{ book.created|date:"F j, Y" }}</p>
 
-<h2>Reviews</h2>
+    <hr>
 
-{% if user.is_authenticated %}
-    <p>
-        <a href="{% url 'create_review' book.id %}">Write a Review</a>
-    </p>
-{% endif %}
+    <h2>Reviews</h2>
 
-{% if reviews %}
-    <ul>
-        {% for review in reviews %}
-            <div id="review-{{ review.id }}">
-                <strong>{{ review.headline }}</strong>  
-                (by {{ review.user.full_name }} — Rating: {{ review.rating }}/5)  
-                <p>{{ review.body }}</p>
-            </div>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>No reviews yet for this book.</p>
-{% endif %}
+    {% if can_review %}
+        <p>
+            <a class="btn btn-primary" href="{% url 'create_review' book.id %}">Write a Review</a>
+        </p>
+    {% elif user.is_authenticated %}
+        <p>You have already reviewed this book.</p>
+    {% else %}
+        <p><a href="{% url 'login' %}?next={{ request.path }}">Log in</a> to write a review.</p>
+    {% endif %}
+
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li id="review-{{ review.id }}">
+                    {% include "components/review.html" with review=review is_self=review.is_self simple=True %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews yet for this book.</p>
+    {% endif %}
+</main>
 {% endblock %}

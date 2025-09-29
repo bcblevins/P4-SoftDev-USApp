@@ -6,9 +6,34 @@
     main {
         margin-inline: 20vw;
     }
+    form {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+        justify-content: center ;
+    }
+    h1, h2 {
+        text-align: center;
+        
+    }
+    h2 {
+        margin-top: 30px;
+    }
 </style>
 <main>
-    <h1>Profile</h1>
+    <h1>
+        {% if is_self %}
+            Your Profile
+        {% else %}
+            {% with profile_user.full_name as name %}
+                {% if name|slice:"-1:" == "s" %}
+                    {{ name }}' Profile
+                {% else %}
+                    {{ name }}'s Profile
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+    </h1>
 
     <div class="container">
         <p><strong>Name:</strong> {{ profile_user.full_name }}</p>
@@ -22,14 +47,22 @@
     {% if not is_self %}
         <form action="{% url 'follow' profile_user.id %}" method="post" style="margin:10px 0;">
             {% csrf_token %}
-            <button class="btn" type="submit">Follow</button>
+            <button class="btn" type="submit">Follow {{ profile_user.full_name }}</button>
         </form>
     {% endif %}
 
     <hr>
 
     <!-- Following list -->
-    <h2>Following</h2>
+    {% with profile_user.full_name as name %}
+    <h2>
+        {% if is_self %}
+            Following
+        {% else %}
+            {{ name }} is following
+        {% endif %}
+    </h2>
+    {% endwith %}
     <div class="container">
         {% if following %}
             <ul>
@@ -51,7 +84,19 @@
     </div>
 
     <!-- Followers list -->
-    <h2>Followers</h2>
+    {% with profile_user.full_name as name %}
+    <h2>
+        {% if is_self %}
+            Followers
+        {% else %}
+            {% if name|slice:"-1:" == "s" %}
+                {{ name }}' followers
+            {% else %}
+                {{ name }}'s followers
+            {% endif %}
+        {% endif %}
+    </h2>
+    {% endwith %}
     <div class="container">
         {% if followers %}
             <ul>
@@ -76,7 +121,19 @@
     <hr>
 
     <!-- Reviews (newest first) -->
-    <h2>Reviews</h2>
+    {% with profile_user.full_name as name %}
+    <h2>
+        {% if is_self %}
+            Reviews
+        {% else %}
+            {% if name|slice:"-1:" == "s" %}
+                {{ name }}' reviews
+            {% else %}
+                {{ name }}'s reviews
+            {% endif %}
+        {% endif %}
+    </h2>
+    {% endwith %}
     {% if reviews %}
         <ul>
             {% for review in reviews %}

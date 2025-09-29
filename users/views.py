@@ -2,47 +2,35 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render, redirect
 from .forms import CustomUserCreationForm 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, get_user_model
+from django.contrib.auth import get_user_model   # removed: login
 from reviews.models import Review
 from django.db.models import Q
+from django.urls import reverse_lazy
+from django.contrib.auth.views import LoginView
 
 User = get_user_model()
 
 def signup(request):
+    # Redirect already logged-in users
+    if request.user.is_authenticated:
+        return redirect('profile')
+
+    account_created = False
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user) 
-            return redirect('home')
+            form.save()  # Do NOT auto-login
+            account_created = True
+            # Provide a fresh empty form after success (optional)
+            form = CustomUserCreationForm()
     else:
         form = CustomUserCreationForm()
-    return render(request, 'users/signup.html', {'form': form})
 
-@login_required
-def profile(request):
-    user_profile = request.user
-    # Fetch reviews by this logged-in user
-    reviews = Review.objects.filter(user=user_profile).select_related("book")
-    return render(request, "users/profile.html", {
-        "profile_user": user_profile,
-        "reviews": reviews
+    return render(request, 'users/signup.html', {
+        'form': form,
+        'account_created': account_created,
     })
-
-@login_required
-def search_users(request):
-    query = request.GET.get("q", "")
-    results = []
-    if query:
-        results = User.objects.filter(
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query)
-        ).exclude(id=request.user.id)  # exclude current user
-    return render(request, "users/search_users.html", {
-        "query": query,
-        "results": results
-    })
-
 
 @login_required
 def profile(request):
@@ -57,6 +45,20 @@ def profile(request):
         "followers": followers,
         "reviews": reviews,
         "is_self": True,
+    })
+
+@login_required
+def search_users(request):
+    query = request.GET.get("q", "")
+    results = []
+    if query:
+        results = User.objects.filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).exclude(id=request.user.id)  # exclude current user
+    return render(request, "users/search_users.html", {
+        "query": query,
+        "results": results
     })
 
 @login_required
@@ -102,3 +104,10 @@ def follow(request, user_id):
 
     # If someone somehow sends a GET request, just redirect
     return redirect('public_profile', user_id=target_user.id)
+
+class CustomLoginView(LoginView):
+    template_name = 'users/login.html'
+    redirect_authenticated_user = True  # Redirect if already logged in
+
+    def get_success_url(self):
+        return reverse_lazy('profile')

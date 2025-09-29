@@ -1,18 +1,102 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
-{% if query %}
-<h1>Books matching '{{ query }}'</h1>
-    {% if results %}
-        <ul>
-            {% for book in results %}
-                <li>
-                    <a href="{% url 'book_detail' book.id %}">{{ book.title }}</a>
-                </li>
-            {% endfor %}
-        </ul>
+<style>
+    main {
+        max-width: 60vw;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+    }
+    .book-list {
+        width: 100%;
+        list-style: none;
+        padding: 0;
+    }
+    .book-card {
+        display: flex;
+        align-items: flex-start;
+        gap: 20px;
+        border-bottom: 1px solid #ccc;
+        padding: 15px 0;
+    }
+    h3 {
+        border-bottom: 1px solid #ddd;
+    }
+    .book-card img {
+        max-width: 100px;
+        height: auto;
+        border: 1px solid #ddd;
+    }
+    .book-info h3 {
+        margin: 0;
+    }
+    .book-info p {
+        margin: 4px 0;
+    }
+    .cta {
+        margin-top: 20px;
+        text-align: center;
+    }
+</style>
+<main>
+    {% if query %}
+        <h1>Books matching "{{ query }}"</h1>
+
+        {% if results %}
+            <ul class="book-list">
+                {% for book in results %}
+                    <li class="book-card">
+                        {% if book.image %}
+                            <img src="{{ book.image.url }}" alt="{{ book.title }}">
+                        {% else %}
+                            <img src="{% static 'images/no-cover.png' %}" alt="No cover available">
+                        {% endif %}
+                        <div class="book-info">
+                            <h3>
+                                <a class="title-link" href="{% url 'book_detail' book.id %}">{{ book.title }}</a>
+                            </h3>
+                            <p>Reviews: {{ book.review_count }}</p>
+                            <p>
+                                Average Rating:
+                                {% if book.avg_rating %}
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= book.avg_rating %}
+                                            <span style="color:black;">&#9733;</span>
+                                        {% else %}
+                                            <span style="color:lightgray;">&#9733;</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                    ({{ book.avg_rating|floatformat:1 }} / 5)
+                                {% else %}
+                                    {% for i in "12345"|make_list %}
+                                        <span style="color:lightgray;">&#9733;</span>
+                                    {% endfor %}
+                                    No ratings yet
+                                {% endif %}
+                            </p>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No matching books found.</p>
+        {% endif %}
+
+        <div class="cta">
+            {% if user.is_authenticated %}
+                <a href="{% url 'create_book' %}" class="btn btn-primary">Create a New Book</a>
+            {% else %}
+                <p>
+                    <a href="{% url 'login' %}">Log in</a> or 
+                    <a href="{% url 'signup' %}">Sign up</a> to create a new book.
+                </p>
+            {% endif %}
+        </div>
     {% else %}
-        <p>No matching books found.</p>
+        <h1>Please enter a search term in the header above.</h1>
     {% endif %}
-{% endif %}
 {% endblock %}

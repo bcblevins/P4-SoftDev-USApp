@@ -4,12 +4,6 @@
         gap: 15px;
     }
 
-    .book-link {
-        font-size: 1.2em;
-        color: #757575;
-        display: block;
-        margin-bottom: 0.5em;
-    }
     img {
         object-fit: cover;
         max-width: 20%;
@@ -27,48 +21,62 @@
         gap: 10px;
         justify-self: flex-end;
     }
+    .posted-info {
+        font-size: 0.9em;
+        color: gray;
+        margin-top: auto;
+    }
+    .review-content p {
+        max-width: 100%;
+        overflow-wrap: anywhere;  
+        word-wrap: break-word;     
+        word-break: break-word;    
+        hyphens: auto;             
+        white-space: normal; 
+    }
 </style>
 
 <div id="review-{{ review.id }}" class="container review-item">
-    {% if review.book.image %}
+    {% if review.book.image and not simple %}
         <img src="{{ review.book.image.url }}"
                 alt="{{ review.book.title }}"
                 class="review-book-image"
                 >
     {% endif %}
     <div class="review-content">
-        <div>
-            <!-- Link to book detail page, anchored to the review -->
-            <a class="book-link" href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">
-                {{ review.book.title }}
-            </a>
-            <hr>
-        </div>
+        {% if not simple %}
+            <div>
+                <!-- Link to book detail page, anchored to the review -->
+                <a class="title-link" href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">
+                    {{ review.book.title }}
+                </a>
+                <hr>
+            </div>
+        {% endif %}
 
         <div>
 
         <!-- Review headline and stars -->
         <strong>{{ review.headline }}</strong> —
         {% for i in "12345"|slice:":review.rating"|make_list %}
-            <span style="color:black;">&#9733;</span>
+            {% if forloop.counter <= review.rating %}
+                <span style="color:black;">&#9733;</span>
+            {% else %}
+                <span style="color:lightgray;">&#9733;</span>
+            {% endif %}
         {% endfor %}
+
         </div>
         
         <!-- Review body -->
         <p>{{ review.body }}</p>
 
-        <!-- Review date/time -->
-        <p>
-            Review posted on {{ review.created|date:"F j, Y" }}
-            at {{ review.created|time:"g:i A" }}
-        </p>
-
+        <!-- Edit/Delete buttons if the review belongs to the current user -->
         {% if is_self %}
             <div class="review-actions"">
                 <!-- Edit button -->
                 <button class="btn btn-primary"
-                        onclick="window.location.href='{% url 'edit_review' review.id %}'"
-                        type="button">
+                        onclick="window.location.href='{% url 'edit_review' review.id %}'">
                     Edit
                 </button>
                 <!-- Delete form -->
@@ -78,6 +86,12 @@
                 </form>
             </div>
         {% endif %}
+
+        <!-- Review date/time -->
+        <p class="posted-info">
+            Posted by {{ review.user.full_name }} on {{ review.created|date:"F j, Y" }}
+            at {{ review.created|time:"g:i A" }}
+        </p>
     </div>
 
 </div>
