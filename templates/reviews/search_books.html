@@ -1,15 +1,8 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Search Books</h1>
-
-<form method="get">
-    <input type="text" name="q" placeholder="Search by title" value="{{ query }}">
-    <button type="submit">Search</button>
-</form>
-
 {% if query %}
+<h1>Books matching '{{ query }}'</h1>
     {% if results %}
         <ul>
             {% for book in results %}

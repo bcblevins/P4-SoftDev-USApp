@@ -1,11 +1,54 @@
+{% extends "base.html" %} {% block content %}
+<style>
+    main {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 80vh;
+        gap: 20px;
+    }
 
-{% extends "base.html" %}
+    .login-container {
+        max-width: 400px;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        justify-content: center;
+        align-items: center;
+        
+    }
 
-{% block content %}
-<h2>Login</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
-</form>
+    form {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+<main>
+    <div class="container login-container">
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div>
+                <label for="{{ form.username.id_for_label }}" style="display: block;">Username</label>
+                {{ form.username }}
+            </div>
+            <div>
+                <label for="{{ form.password.id_for_label }}" style="display: block;">Password</label>
+                {{ form.password }}
+            </div>
+            <button class="btn" type="submit">Login</button>
+        </form>
+    </div>
+    <div>
+        <span>Don't have an account? </span><a href="{% url 'signup' %}">Sign up</a> 
+    </div>
+</main>
+
+
 {% endblock %}

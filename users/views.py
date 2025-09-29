@@ -1,3 +1,4 @@
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render, redirect
 from .forms import CustomUserCreationForm 
 from django.contrib.auth.decorators import login_required
@@ -42,10 +43,62 @@ def search_users(request):
         "results": results
     })
 
+
+@login_required
+def profile(request):
+    me = request.user
+    following = me.following.all()
+    followers = User.objects.filter(following=me)
+    reviews = Review.objects.filter(user=me).select_related("book").order_by("-created")
+
+    return render(request, "users/profile.html", {
+        "profile_user": me,
+        "following": following,
+        "followers": followers,
+        "reviews": reviews,
+        "is_self": True,
+    })
+
+@login_required
 def public_profile(request, user_id):
     user_profile = get_object_or_404(User, id=user_id)
-    reviews = Review.objects.filter(user=user_profile).select_related("book")
-    return render(request, "users/public_profile.html", {
+
+    following = user_profile.following.all()
+    followers = User.objects.filter(following=user_profile)
+    reviews = Review.objects.filter(user=user_profile).select_related("book").order_by("-created")
+
+    # Consider self-view routed via /users/profile/, but if someone hits /users/user/<id>/ for themselves:
+    is_self = request.user.id == user_profile.id
+
+    return render(request, "users/profile.html", {
         "profile_user": user_profile,
-        "reviews": reviews
+        "following": following,
+        "followers": followers,
+        "reviews": reviews,
+        "is_self": is_self,
     })
+
+@login_required
+def unfollow(request, user_id):
+    target = get_object_or_404(User, id=user_id)
+    if request.method == 'POST' and target != request.user:
+        request.user.following.remove(target)
+    return redirect('profile')
+
+@login_required
+def follow(request, user_id):
+    target_user = get_object_or_404(User, id=user_id)
+
+    # Prevent following self
+    if target_user == request.user:
+        return HttpResponseForbidden("You cannot follow yourself.")
+
+    if request.method == "POST":
+        # Add to following list if not already there
+        if not request.user.following.filter(id=target_user.id).exists():
+            request.user.following.add(target_user)
+        # Redirect back to the public profile page
+        return redirect('public_profile', user_id=target_user.id)
+
+    # If someone somehow sends a GET request, just redirect
+    return redirect('public_profile', user_id=target_user.id)

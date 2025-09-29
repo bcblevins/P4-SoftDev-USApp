@@ -1,33 +1,64 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>LitReview</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
     <style>
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #b1b0b0;
+
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            width: max-content;
+
+            a {
+                width: max-content;
+            }
+        }
+
+        .content {
+            padding: 20px;
+            margin: auto;
+        }
+        
     </style>
 </head>
 <body>
     <nav>
-        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'home' %}">LITReview</a>
 
-        {% if user.is_authenticated %}
-            <a href="{% url 'profile' %}">My Profile</a>
-            <a href="{% url 'search_users' %}">Find Users</a>
-            <form action="{% url 'logout' %}" method="post" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit">Log out</button>
-            </form>
-        {% else %}
-            <a href="{% url 'login' %}">Log in</a>
-            <a href="{% url 'signup' %}">Sign up</a>
-        {% endif %}
+        <form action="{% url 'search_books' %}" method="get"">
+            <input  type="text" name="q" placeholder="Search for a book...">
+        </form>
 
-        <a href="{% url 'search_books' %}">Search Books</a>
+        <div class="nav-links">
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}">My Profile</a>
+                <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button class="btn btn-secondary" type="submit">Log out</button>
+                </form>
+            {% else %}
+                <a href="{% url 'login' %}">Log in</a>
+                <span>|</span>
+                <a href="{% url 'signup' %}">Sign up</a>
+            {% endif %}
+        </div>
     </nav>
-
-    <hr>
-
+    <div class="content">
     {% block content %}
     {% endblock %}
+    </div>
 </body>
 </html>

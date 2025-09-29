@@ -1,23 +1,110 @@
-
 {% extends "base.html" %}
 
 {% block content %}
-<h1>My Profile</h1>
-<p><strong>Name:</strong> {{ profile_user.full_name }}</p>
-<p><strong>Username:</strong> {{ profile_user.username }}</p>
+<style>
 
-<h2>My Reviews</h2>
-{% if reviews %}
-    <ul>
-        {% for review in reviews %}
-            <li>
-                <a href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">
-                    {{ review.headline }}
-                </a> ({{ review.rating }}/5)
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>You have not written any reviews yet.</p>
-{% endif %}
+    .review-item {
+        list-style: none;
+    }
+    main {
+        margin-inline: 20vw;
+    }
+</style>
+<main>
+    <h1>Profile</h1>
+
+    <div class="container">
+        <p><strong>Name:</strong> {{ profile_user.full_name }}</p>
+        {% if is_self %}
+            <p><strong>Email:</strong> {{ profile_user.email }}</p>
+        {% endif %}
+    </div>
+
+
+    <!-- Follow button (only when viewing someone else's profile) -->
+    {% if not is_self %}
+        <form action="{% url 'follow' profile_user.id %}" method="post" style="margin:10px 0;">
+            {% csrf_token %}
+            <button class="btn" type="submit">Follow</button>
+        </form>
+    {% endif %}
+
+    <hr>
+
+    <!-- Following list -->
+    <h2>Following</h2>
+    <div class="container">
+        {% if following %}
+            <ul>
+                {% for u in following %}
+                    <li>
+                        {{ u.full_name }} (@{{ u.username }})
+                        {% if is_self %}
+                            <form action="{% url 'unfollow' u.id %}" method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <button class="btn" type="submit">Unfollow</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{% if is_self %}You are not following anyone yet.{% else %}This user is not following anyone.{% endif %}</p>
+        {% endif %}
+    </div>
+
+    <!-- Followers list -->
+    <h2>Followers</h2>
+    <div class="container">
+        {% if followers %}
+            <ul>
+                {% for u in followers %}
+                    <li>{{ u.full_name }} (@{{ u.username }})</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{% if is_self %}No one is following you yet.{% else %}No one is following this user yet.{% endif %}</p>
+        {% endif %}
+    </div>
+
+    <!-- User search (only on own profile) -->
+    {% if is_self %}
+        <hr>
+        <h2>Find Users to Follow</h2>
+        <form action="{% url 'search_users' %}" method="get">
+            <input type="text" name="q" placeholder="Search by name...">
+        </form>
+    {% endif %}
+
+    <hr>
+
+    <!-- Reviews (newest first) -->
+    <h2>Reviews</h2>
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li class="review-item container">
+                    <a href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">{{ review.book.title }}</a>
+                    <br>
+                    <strong>{{ review.headline }}</strong> —
+                    {% for i in "12345"|slice:":review.rating"|make_list %}
+                        <span style="color:black;">&#9733;</span>
+                    {% endfor %}
+                    <p>{{ review.body }}</p>
+                    <p>Review posted on {{ review.created|date:"F j, Y" }} at {{ review.created|time:"g:i A" }}</p>
+                    {% if is_self %}
+                        <br>
+                        <button class="btn btn-primary" onclick="window.location.href='{% url 'edit_review' review.id %}'" type="button">Edit</button>
+                        <form action="{% url 'delete_review' review.id %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button class="btn btn-danger" type="submit">Delete</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>{% if is_self %}You have not written any reviews yet.{% else %}This user has not written any reviews yet.{% endif %}</p>
+    {% endif %}
+</main>
 {% endblock %}
