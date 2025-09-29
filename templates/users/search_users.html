@@ -1,0 +1,25 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Find Users to Follow</h1>
+
+<form method="get">
+    <input type="text" name="q" placeholder="Search by name" value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+
+{% if query %}
+    {% if results %}
+        <ul>
+            {% for user in results %}
+                <li>
+                    <a href="{% url 'public_profile' user.id %}">{{ user.full_name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No matching users found.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

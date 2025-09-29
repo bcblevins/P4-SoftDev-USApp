@@ -1,0 +1,26 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Homepage Feed</h1>
+
+{% for review in reviews %}
+    <div>
+        <a href="{% url 'book_detail' review.book.id %}#review-{{ review.id }}">
+            <strong>{{ review.headline }}</strong>
+        </a>
+        by {{ review.user.full_name }}  
+        (<em>{{ review.book.title }}</em>) — {{ review.created|date:"F j, Y, g:i a" }}
+        <p>{{ review.body|truncatechars:150 }}</p>
+    </div>
+{% empty %}
+    <p>No reviews to show.</p>
+{% endfor %}
+
+{% if user.is_authenticated %}
+    <form action="{% url 'logout' %}" method="post" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Log out</button>
+    </form>
+{% endif %}
+{% endblock %}

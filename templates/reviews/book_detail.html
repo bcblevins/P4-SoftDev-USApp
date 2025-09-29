@@ -1,0 +1,37 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ book.title }}</h1>
+
+{% if book.image %}
+    <img src="{{ book.image.url }}" alt="{{ book.title }}" style="max-width:200px;">
+{% endif %}
+
+<p>{{ book.description }}</p>
+<p><strong>Created:</strong> {{ book.created|date:"F j, Y" }}</p>
+
+<hr>
+
+<h2>Reviews</h2>
+
+{% if user.is_authenticated %}
+    <p>
+        <a href="{% url 'create_review' book.id %}">Write a Review</a>
+    </p>
+{% endif %}
+
+{% if reviews %}
+    <ul>
+        {% for review in reviews %}
+            <div id="review-{{ review.id }}">
+                <strong>{{ review.headline }}</strong>  
+                (by {{ review.user.full_name }} — Rating: {{ review.rating }}/5)  
+                <p>{{ review.body }}</p>
+            </div>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No reviews yet for this book.</p>
+{% endif %}
+{% endblock %}

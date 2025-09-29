@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
+from reviews import views as review_views
 
 # Temporary home view so LOGIN_REDIRECT_URL works
 def home(request):
@@ -23,6 +24,7 @@ def home(request):
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", home, name="home"),  # home page at root
+    path("", review_views.home, name="home"),  # home page at root
     path("users/", include("users.urls")),  # add URL patterns from users app
+    path("reviews/", include("reviews.urls")),  # add URL patterns from reviews app
 ]

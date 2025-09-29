@@ -1,0 +1,20 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Write a Review for "{{ book.title }}"</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit Review</button>
+</form>
+
+<h2>Existing Reviews</h2>
+{% for review in reviews %}
+    <p><strong>{{ review.headline }}</strong> — {{ review.user.full_name }} ({{ review.rating }}/5)
+    <br>{{ review.body }}</p>
+{% empty %}
+    <p>No reviews yet.</p>
+{% endfor %}
+{% endblock %}
