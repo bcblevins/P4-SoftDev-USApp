@@ -73,7 +73,7 @@
 
         <!-- Edit/Delete buttons if the review belongs to the current user -->
         {% if is_self %}
-            <div class="review-actions"">
+            <div class="review-actions">
                 <!-- Edit button -->
                 <button class="btn btn-primary"
                         onclick="window.location.href='{% url 'edit_review' review.id %}'">

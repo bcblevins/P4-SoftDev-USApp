@@ -13,6 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.http import HttpResponse
@@ -20,9 +21,12 @@ from reviews import views as review_views
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 # Temporary home view so LOGIN_REDIRECT_URL works
 def home(request):
+    """Return a simple logged-in welcome message."""
     return HttpResponse("<h1>Welcome, you are logged in!</h1>")
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -31,5 +35,5 @@ urlpatterns = [
     path("reviews/", include("reviews.urls")),  # add URL patterns from reviews app
 ]
 
-if settings.DEBUG: 
+if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

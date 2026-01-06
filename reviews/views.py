@@ -6,12 +6,13 @@ from .forms import BookForm, ReviewForm
 from django.db.models import Q, Count, Avg
 from django.urls import reverse
 
+
 def book_detail(request, book_id):
+    """Display a book's details along with its related reviews."""
     book = get_object_or_404(Book, id=book_id)
-    reviews = (Review.objects
-               .filter(book=book)
-               .select_related("user")
-               .order_by("-created"))
+    reviews = (
+        Review.objects.filter(book=book).select_related("user").order_by("-created")
+    )
 
     has_reviewed = False
     if request.user.is_authenticated:
@@ -28,6 +29,7 @@ def book_detail(request, book_id):
 
 @login_required
 def create_book(request):
+    """Create a new book and redirect to its detail page on success."""
     if request.method == "POST":
         form = BookForm(request.POST, request.FILES)
         if form.is_valid():
@@ -41,14 +43,15 @@ def create_book(request):
 
 @login_required
 def create_review(request, book_id):
+    """Create a review for the given book and redirect on success."""
     book = get_object_or_404(Book, id=book_id)
 
     if request.method == "POST":
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
-            review.book = book             
-            review.user = request.user      
+            review.book = book
+            review.user = request.user
             review.save()
             # Redirect to book detail with anchor to the new review
             url = reverse("book_detail", args=[book.id]) + f"#review-{review.id}"
@@ -57,15 +60,16 @@ def create_review(request, book_id):
         form = ReviewForm()
 
     reviews = Review.objects.filter(book=book).select_related("user")
-    return render(request, "reviews/create_review.html", {
-        "form": form,
-        "book": book,
-        "reviews": reviews
-    })
+    return render(
+        request,
+        "reviews/create_review.html",
+        {"form": form, "book": book, "reviews": reviews},
+    )
 
 
 def home(request):
-    show_all = request.GET.get('all') == '1'
+    """Render the homepage feed for authenticated or anonymous users."""
+    show_all = request.GET.get("all") == "1"
     reviews = []
 
     if request.user.is_authenticated and not show_all:
@@ -78,52 +82,57 @@ def home(request):
     else:
         # Anonymous OR "show all" clicked
         reviews = Review.objects.all().select_related("book", "user")
-        is_self = request.user.is_authenticated  
+        is_self = request.user.is_authenticated
 
+    reviews = reviews.order_by("-created")
 
-    reviews = reviews.order_by('-created')
-
-    return render(request, "home.html", {
-        "reviews": reviews,
-        "is_self": is_self,
-        "show_all": show_all,
-    })
+    return render(
+        request,
+        "home.html",
+        {
+            "reviews": reviews,
+            "is_self": is_self,
+            "show_all": show_all,
+        },
+    )
 
 
 def search_books(request):
+    """Search books by partial title and render matching results."""
     query = request.GET.get("q", "")
     results = []
 
     if query:
         results = Book.objects.filter(title__icontains=query).annotate(
-            review_count=Count('review', distinct=True),
-            avg_rating=Avg('review__rating')
+            review_count=Count("review", distinct=True),
+            avg_rating=Avg("review__rating"),
         )
 
-    return render(request, "reviews/search_books.html", {
-        "query": query,
-        "results": results
-    })
+    return render(
+        request, "reviews/search_books.html", {"query": query, "results": results}
+    )
+
 
 @login_required
 def edit_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if review.user != request.user:
         return HttpResponseForbidden("You are not allowed to edit this review.")
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ReviewForm(request.POST, instance=review)
         if form.is_valid():
             form.save()
-            return redirect('profile')
+            return redirect("profile")
     else:
         form = ReviewForm(instance=review)
-    return render(request, 'reviews/edit_review.html', {'form': form, 'review': review})
+    return render(request, "reviews/edit_review.html", {"form": form, "review": review})
+
 
 @login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
     if review.user != request.user:
         return HttpResponseForbidden("You are not allowed to delete this review.")
-    if request.method == 'POST':
+    if request.method == "POST":
         review.delete()
-    return redirect('profile')
+    return redirect("profile")

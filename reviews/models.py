@@ -13,7 +13,9 @@ class Book(models.Model):
         null=False,
         blank=False,
     )
-    image = models.ImageField(upload_to="books/", verbose_name="Book cover", null=True, blank=True)
+    image = models.ImageField(
+        upload_to="books/", verbose_name="Book cover", null=True, blank=True
+    )
     description = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
 

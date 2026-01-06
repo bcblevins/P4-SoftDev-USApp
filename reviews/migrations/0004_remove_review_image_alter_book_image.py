@@ -4,19 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('reviews', '0003_review_image'),
+        ("reviews", "0003_review_image"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='review',
-            name='image',
+            model_name="review",
+            name="image",
         ),
         migrations.AlterField(
-            model_name='book',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='books/', verbose_name='Book cover'),
+            model_name="book",
+            name="image",
+            field=models.ImageField(
+                blank=True, null=True, upload_to="books/", verbose_name="Book cover"
+            ),
         ),
     ]
